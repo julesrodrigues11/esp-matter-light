@@ -21,23 +21,7 @@ using namespace esp_matter;
 static const char *TAG = "app_driver";
 extern uint16_t light_endpoint_id;
 
-static uint8_t s_led_state = 0;
 static led_strip_handle_t led_strip;
-
-void blink_led(void)
-{
-    ESP_LOGI(TAG, "Blink");
-    /* If the addressable LED is enabled */
-    if (s_led_state) {
-        /* Set the LED pixel using RGB from 0 (0%) to 255 (100%) for each color */
-        led_strip_set_pixel(led_strip, 0, 16, 16, 16);
-        /* Refresh the strip to send data */
-        led_strip_refresh(led_strip);
-    } else {
-        /* Set all LED off to clear all pixels */
-        led_strip_clear(led_strip);
-    }
-}
 
 void configure_led(void)
 {
@@ -55,21 +39,43 @@ void configure_led(void)
     led_strip_clear(led_strip);
 }
 
+// Function to switch on addressable LED panel in esp32c6
+void switchOn(void)
+{
+    ESP_LOGI(TAG, "Switch On");
+
+    // Set the LED pixel using RGB from 0 (0%) to 255 (100%) for each color
+    led_strip_set_pixel(led_strip, 0, 16, 16, 16);
+
+    //Refresh the strip to send data
+    led_strip_refresh(led_strip);
+
+}
+
+// Function to switch off addressable LED panel in esp32c6
+void switchOff(void)
+{
+    ESP_LOGI(TAG, "Switch Off");
+    
+    // Set all LED off to clear all pixels
+    led_strip_clear(led_strip);
+}
+
 /* Do any conversions/remapping for the actual value here */
 static esp_err_t app_driver_light_set_power(led_indicator_handle_t handle, esp_matter_attr_val_t *val)
 {
 #if CONFIG_BSP_LEDS_NUM > 0
-    blink_led();
     esp_err_t err = ESP_OK;
     if (val->val.b) {
         err = led_indicator_start(handle, BSP_LED_ON);
+        switchOn();
     } else {
         err = led_indicator_start(handle, BSP_LED_OFF);
+        switchOff();
     }
     return err;
 #else
     ESP_LOGI(TAG, "LED set power: %d", val->val.b);
-    blink_led();
     return ESP_OK;
 #endif
 }
@@ -90,7 +96,7 @@ static esp_err_t app_driver_light_set_hue(led_indicator_handle_t handle, esp_mat
     int value = REMAP_TO_RANGE(val->val.u8, MATTER_HUE, STANDARD_HUE);
 #if CONFIG_BSP_LEDS_NUM > 0
     uint32_t hsv = led_indicator_get_hsv(handle);
-    SET_HUE(hsv, value);
+    //SET_HUE(hsv, value);
     return led_indicator_set_hsv(handle, hsv);
 #else
     ESP_LOGI(TAG, "LED set hue: %d", value);
@@ -103,7 +109,7 @@ static esp_err_t app_driver_light_set_saturation(led_indicator_handle_t handle, 
     int value = REMAP_TO_RANGE(val->val.u8, MATTER_SATURATION, STANDARD_SATURATION);
 #if CONFIG_BSP_LEDS_NUM > 0
     uint32_t hsv = led_indicator_get_hsv(handle);
-    SET_SATURATION(hsv, value);
+    //SET_SATURATION(hsv, value);
     return led_indicator_set_hsv(handle, hsv);
 #else
     ESP_LOGI(TAG, "LED set saturation: %d", value);
@@ -225,7 +231,7 @@ app_driver_handle_t app_driver_light_init()
     /* Initialize led */
     led_indicator_handle_t leds[CONFIG_BSP_LEDS_NUM];
     ESP_ERROR_CHECK(bsp_led_indicator_create(leds, NULL, CONFIG_BSP_LEDS_NUM));
-    led_indicator_set_hsv(leds[0], SET_HSV(DEFAULT_HUE, DEFAULT_SATURATION, DEFAULT_BRIGHTNESS));
+    //led_indicator_set_hsv(leds[0], SET_HSV(DEFAULT_HUE, DEFAULT_SATURATION, DEFAULT_BRIGHTNESS));
     
     return (app_driver_handle_t)leds[0];
 #else

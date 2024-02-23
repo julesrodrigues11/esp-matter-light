@@ -49,6 +49,9 @@ void blink_led(void);
 
 void configure_led(void);
 
+void switchOff(void);
+void switchOn(void);
+
 typedef void *app_driver_handle_t;
 
 /** Initialize the light driver
