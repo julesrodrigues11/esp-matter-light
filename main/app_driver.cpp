@@ -132,7 +132,6 @@ static void app_driver_button_toggle_cb(void *arg, void *data)
 {
 
     ESP_LOGI(TAG, "Toggle button pressed");
-    ESP_LOGI(TAG, "Here");
     uint16_t endpoint_id = light_endpoint_id;
     uint32_t cluster_id = OnOff::Id;
     uint32_t attribute_id = OnOff::Attributes::OnOff::Id;
